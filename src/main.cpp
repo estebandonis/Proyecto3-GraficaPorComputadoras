@@ -13,6 +13,7 @@
 #include "intersect.h"
 #include "object.h"
 #include "sphere.h"
+#include "cube.h"
 #include "light.h"
 #include "camera.h"
 
@@ -33,18 +34,17 @@ void point(glm::vec2 position, Color color) {
     SDL_RenderDrawPoint(renderer, position.x, position.y);
 }
 
-float castShadow(const glm::vec3& shadowOrigin, const glm::vec3& lightDir, Object* hitObject) {
-    for (auto& obj : objects) {
-        if (obj != hitObject) {
-            Intersect shadowIntersect = obj->rayIntersect(shadowOrigin, lightDir);
-            if (shadowIntersect.isIntersecting && shadowIntersect.dist > 0) {
-                float shadowRatio = shadowIntersect.dist / glm::length(light.position - shadowOrigin);
-                shadowRatio = glm::min(1.0f, shadowRatio);
-                return 1.0f - shadowRatio;
-            }
-        }
+float castShadow(const glm::vec3& point, const glm::vec3& lightDir, const Object* hitObject) {
+  float tNearShadow = INFINITY;
+  for (const auto& object : objects) {
+    if (object != hitObject) {
+      float t = object->rayIntersect(point + lightDir * BIAS, lightDir).dist;
+      if (t < tNearShadow) {
+        tNearShadow = t;
+      }
     }
-    return 1.0f;
+  }
+  return tNearShadow < 1 ? 0.5f : 1.0f;
 }
 
 Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const short recursion = 0) {
@@ -65,12 +65,12 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
         return Color(173, 216, 230);
     }
 
-
     glm::vec3 lightDir = glm::normalize(light.position - intersect.point);
     glm::vec3 viewDir = glm::normalize(rayOrigin - intersect.point);
     glm::vec3 reflectDir = glm::reflect(-lightDir, intersect.normal); 
 
-    float shadowIntensity = castShadow(intersect.point, lightDir, hitObject);
+    // Add a small bias to the origin of the shadow ray
+    float shadowIntensity = castShadow(intersect.point + intersect.normal * BIAS, lightDir, hitObject);
 
     float diffuseLightIntensity = std::max(0.0f, glm::dot(intersect.normal, lightDir));
     float specReflection = glm::dot(viewDir, reflectDir);
@@ -92,8 +92,6 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
         glm::vec3 refractDir = glm::refract(rayDirection, intersect.normal, mat.refractionIndex);
         refractedColor = castRay(origin, refractDir, recursion + 1); 
     }
-
-
 
     Color diffuseLight = mat.diffuse * light.intensity * diffuseLightIntensity * mat.albedo * shadowIntensity;
     Color specularLight = light.color * light.intensity * specLightIntensity * mat.specularAlbedo * shadowIntensity;
@@ -137,10 +135,13 @@ void setUp() {
         0.2f,
         1.0f,
     };
-    objects.push_back(new Sphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, rubber));
-    objects.push_back(new Sphere(glm::vec3(-1.0f, 0.0f, -4.0f), 1.0f, ivory));
-    objects.push_back(new Sphere(glm::vec3(1.0f, 0.0f, -4.0f), 1.0f, mirror));
-    objects.push_back(new Sphere(glm::vec3(0.0f, 1.0f, -3.0f), 1.0f, glass));
+    // objects.push_back(new Sphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
+    // objects.push_back(new Sphere(glm::vec3(-1.0f, 0.0f, -4.0f), 1.0f, ivory));
+    // objects.push_back(new Sphere(glm::vec3(1.0f, 0.0f, -4.0f), 1.0f, mirror));
+    // objects.push_back(new Sphere(glm::vec3(0.0f, 1.0f, -3.0f), 1.0f, glass));
+    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -3.0f), 1.0f, ivory));
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, mirror));
+    // objects.push_back(new Sphere(glm::vec3(3.0f, 0.0f, 0.0f), 1.0f, glass));
 }
 
 void render() {

@@ -11,3 +11,4 @@ llama*
 assets/Models
 logs
 .DS_Store
+.vscode

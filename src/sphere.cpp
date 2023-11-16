@@ -26,5 +26,3 @@ Intersect Sphere::rayIntersect(const glm::vec3& rayOrigin, const glm::vec3& rayD
   glm::vec3 normal = glm::normalize(point - center);
   return Intersect{true, dist, point, normal};
 }
-
-
