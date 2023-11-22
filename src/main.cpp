@@ -9,6 +9,7 @@
 #include <vector>
 #include <print.h>
 
+#include "FastNoiseLite.h"
 #include "color.h"
 #include "intersect.h"
 #include "object.h"
@@ -20,12 +21,12 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 const float ASPECT_RATIO = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
-const int MAX_RECURSION = 3;
+const int MAX_RECURSION = 4;
 const float BIAS = 0.0001f;
 
 SDL_Renderer* renderer;
 std::vector<Object*> objects;
-Light light(glm::vec3(-1.0, 0, 10), 1.5f, Color(255, 255, 255));
+Light light(glm::vec3(0, 0, 10), 1.5f, Color(255, 255, 255));
 Camera camera(glm::vec3(0.0, 0.0, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
 
 
@@ -88,9 +89,14 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
 
     Color refractedColor(0.0f, 0.0f, 0.0f);
     if (mat.transparency > 0) {
-        glm::vec3 origin = intersect.point - intersect.normal * BIAS;
-        glm::vec3 refractDir = glm::refract(rayDirection, intersect.normal, mat.refractionIndex);
-        refractedColor = castRay(origin, refractDir, recursion + 1); 
+        glm::vec3 normal = intersect.normal;
+        float refractionIndex = mat.refractionIndex;
+        if (glm::dot(rayDirection, normal) > 0) {
+            normal = -normal;
+            refractionIndex = 1 / refractionIndex;
+        }
+        glm::vec3 refractDir = glm::refract(rayDirection, normal, refractionIndex);
+        refractedColor = castRay(intersect.point - normal * BIAS, refractDir, recursion + 1);
     }
 
     Color diffuseLight = mat.diffuse * light.intensity * diffuseLightIntensity * mat.albedo * shadowIntensity;
@@ -127,25 +133,26 @@ void setUp() {
         0.0f
     };
 
-    Material glass = {
+    Material water = {
         Color(255, 255, 255),
         0.0f,
         10.0f,
         1425.0f,
-        0.2f,
+        0.1f,
         1.0f,
+        1.0f
     };
-    // objects.push_back(new Sphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
-    // objects.push_back(new Sphere(glm::vec3(-1.0f, 0.0f, -4.0f), 1.0f, ivory));
-    // objects.push_back(new Sphere(glm::vec3(1.0f, 0.0f, -4.0f), 1.0f, mirror));
-    // objects.push_back(new Sphere(glm::vec3(0.0f, 1.0f, -3.0f), 1.0f, glass));
-    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -3.0f), 1.0f, ivory));
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, mirror));
-    // objects.push_back(new Sphere(glm::vec3(3.0f, 0.0f, 0.0f), 1.0f, glass));
+
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
+    // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 0.4f, ivory));
+
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, rubber));
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 0.4f, ivory));
 }
 
 void render() {
     float fov = 3.1415/3;
+
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             /*
@@ -217,6 +224,7 @@ int main(int argc, char* argv[]) {
     
     setUp();
 
+
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -226,10 +234,10 @@ int main(int argc, char* argv[]) {
             if (event.type == SDL_KEYDOWN) {
                 switch(event.key.keysym.sym) {
                     case SDLK_UP:
-                        camera.move(-1.0f);
+                        camera.move(1.0f);
                         break;
                     case SDLK_DOWN:
-                        camera.move(1.0f);
+                        camera.move(-1.0f);
                         break;
                     case SDLK_LEFT:
                         print("left");
