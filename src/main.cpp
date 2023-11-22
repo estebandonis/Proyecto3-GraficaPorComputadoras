@@ -25,7 +25,7 @@ const float BIAS = 0.0001f;
 
 SDL_Renderer* renderer;
 std::vector<Object*> objects;
-Light light(glm::vec3(0, 0, 10), 1.5f, Color(255, 255, 255));
+Light light(glm::vec3(-8, 0, 10), 1.5f, Color(255, 255, 255));
 Camera camera(glm::vec3(0.0, 0.0, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
 
 
@@ -104,7 +104,27 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
     SDL_Color colorTexture;
     int bpp = mat.texture->format->BytesPerPixel;
     Uint8 *p = (Uint8 *)mat.texture->pixels + y * mat.texture->pitch + x * bpp;
-    Uint32 pixel = (*(Uint32 *)p);
+    Uint32 pixel;
+    switch (bpp) {
+            case 1:
+                pixel = *p;
+                break;
+            case 2:
+                pixel = *(Uint16 *)p;
+                break;
+            case 3:
+                if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+                    pixel = p[0] << 16 | p[1] << 8 | p[2];
+                } else {
+                    pixel = p[0] | p[1] << 8 | p[2] << 16;
+                }
+                break;
+            case 4:
+                pixel = *(Uint32 *)p;
+                break;
+            default:
+                throw std::runtime_error("Unknown format!");
+        }
     SDL_GetRGB(pixel, mat.texture->format, &colorTexture.r, &colorTexture.g, &colorTexture.b);
     Color textureColor(colorTexture.r, colorTexture.g, colorTexture.b);
 
@@ -124,7 +144,7 @@ void setUp() {
         0.0f
     };
 
-    rubber.texture = IMG_Load("assets/madera1.png");
+    rubber.texture = IMG_Load("assets/madera.png");
     if (!rubber.texture) {
         print("Error loading texture");
     }
@@ -138,7 +158,7 @@ void setUp() {
         0.0f
     };
 
-    ivory.texture = IMG_Load("assets/madera1.png");
+    ivory.texture = IMG_Load("assets/piedra.png");
     if (!ivory.texture) {
         print("Error loading texture");
     }
@@ -168,7 +188,7 @@ void setUp() {
     // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
     // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 0.4f, ivory));
 
-    objects.push_back(new Cube(glm::vec3(0.5f, 0.0f, 0.0f), 1.0f, rubber));
+    // objects.push_back(new Cube(glm::vec3(0.5f, 0.0f, 0.0f), 1.0f, rubber));
     objects.push_back(new Cube(glm::vec3(-0.5f, 0.0f, 0.0f), 1.0f, ivory));
 }
 

@@ -48,17 +48,26 @@ Intersect Cube::rayIntersect(const glm::vec3& rayOrigin, const glm::vec3& rayDir
     glm::vec3 point = rayOrigin + tNear * rayDirection;
     // Calculate texture coordinates
     glm::vec2 uv;
-    if (normal.x != 0) {
-        uv.x = (point.y - (center.y - half)) / side;
-        uv.y = (point.z - (center.z - half)) / side;
-    } else if (normal.y != 0) {
+    if (abs(normal.x) > 0.5) { // hit on x-face
+        if (normal.x > 0) { // right face, rotate texture 90 degrees
+            uv.x = 1 - ((point.z - (center.z - half)) / side);
+            uv.y = 1 - ((point.y - (center.y - half)) / side);
+        } else { // left face, no rotation
+            uv.x = 1 - ((point.z - (center.z - half)) / side);
+            uv.y = 1 - ((point.y - (center.y - half)) / side);
+        }
+    } else if (abs(normal.y) > 0.5) { // hit on y-face
         uv.x = (point.x - (center.x - half)) / side;
         uv.y = (point.z - (center.z - half)) / side;
-    } else { // normal.z != 0
-        uv.x = (point.x - (center.x - half)) / side;
-        uv.y = (point.y - (center.y - half)) / side;
+    } else { // hit on z-face
+        if (normal.z > 0) { // front face, rotate texture 180 degrees
+            uv.x = 1 - ((point.x - (center.x - half)) / side);
+            uv.y = 1 - ((point.y - (center.y - half)) / side);
+        } else { // back face, no rotation
+            uv.x = 1 - ((point.x - (center.x - half)) / side);
+            uv.y = 1 - ((point.y - (center.y - half)) / side);
+        }
     }
-    
     return Intersect{true, tNear, point, normal, uv};
   }
 }
