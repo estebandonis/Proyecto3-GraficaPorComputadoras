@@ -46,6 +46,19 @@ Intersect Cube::rayIntersect(const glm::vec3& rayOrigin, const glm::vec3& rayDir
     return Intersect{false};
   } else {
     glm::vec3 point = rayOrigin + tNear * rayDirection;
-    return Intersect{true, tNear, point, normal};
+    // Calculate texture coordinates
+    glm::vec2 uv;
+    if (normal.x != 0) {
+        uv.x = (point.y - (center.y - half)) / side;
+        uv.y = (point.z - (center.z - half)) / side;
+    } else if (normal.y != 0) {
+        uv.x = (point.x - (center.x - half)) / side;
+        uv.y = (point.z - (center.z - half)) / side;
+    } else { // normal.z != 0
+        uv.x = (point.x - (center.x - half)) / side;
+        uv.y = (point.y - (center.y - half)) / side;
+    }
+    
+    return Intersect{true, tNear, point, normal, uv};
   }
 }

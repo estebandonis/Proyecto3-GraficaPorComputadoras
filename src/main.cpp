@@ -9,7 +9,6 @@
 #include <vector>
 #include <print.h>
 
-#include "FastNoiseLite.h"
 #include "color.h"
 #include "intersect.h"
 #include "object.h"
@@ -99,7 +98,17 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
         refractedColor = castRay(intersect.point - normal * BIAS, refractDir, recursion + 1);
     }
 
-    Color diffuseLight = mat.diffuse * light.intensity * diffuseLightIntensity * mat.albedo * shadowIntensity;
+    // Sample the color from the texture
+    int x = intersect.uv.x * (mat.texture->w - 1);
+    int y = intersect.uv.y * (mat.texture->h - 1);
+    SDL_Color colorTexture;
+    int bpp = mat.texture->format->BytesPerPixel;
+    Uint8 *p = (Uint8 *)mat.texture->pixels + y * mat.texture->pitch + x * bpp;
+    Uint32 pixel = (*(Uint32 *)p);
+    SDL_GetRGB(pixel, mat.texture->format, &colorTexture.r, &colorTexture.g, &colorTexture.b);
+    Color textureColor(colorTexture.r, colorTexture.g, colorTexture.b);
+
+    Color diffuseLight = textureColor * light.intensity * diffuseLightIntensity * mat.albedo * shadowIntensity;
     Color specularLight = light.color * light.intensity * specLightIntensity * mat.specularAlbedo * shadowIntensity;
     Color color = (diffuseLight + specularLight) * (1.0f - mat.reflectivity - mat.transparency) + reflectedColor * mat.reflectivity + refractedColor * mat.transparency;
     return color;
@@ -107,7 +116,7 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
 
 void setUp() {
     Material rubber = {
-        Color(80, 0, 0),   // diffuse
+        nullptr, // Load the texture here
         0.9,
         0.1,
         10.0f,
@@ -115,8 +124,13 @@ void setUp() {
         0.0f
     };
 
+    rubber.texture = IMG_Load("assets/madera1.png");
+    if (!rubber.texture) {
+        print("Error loading texture");
+    }
+
     Material ivory = {
-        Color(100, 100, 80),
+        nullptr, // Load the texture here
         0.5,
         0.5,
         50.0f,
@@ -124,30 +138,38 @@ void setUp() {
         0.0f
     };
 
-    Material mirror = {
-        Color(255, 255, 255),
-        0.0f,
-        10.0f,
-        1425.0f,
-        0.9f,
-        0.0f
-    };
+    ivory.texture = IMG_Load("assets/madera1.png");
+    if (!ivory.texture) {
+        print("Error loading texture");
+    }
 
-    Material water = {
-        Color(255, 255, 255),
-        0.0f,
-        10.0f,
-        1425.0f,
-        0.1f,
-        1.0f,
-        1.0f
-    };
+
+    // Material mirror = {
+    //     Color(255, 255, 255),
+    //     IMG_Load("path_to_your_texture_image.png"), // Load the texture here
+    //     0.0f,
+    //     10.0f,
+    //     1425.0f,
+    //     0.9f,
+    //     0.0f
+    // };
+
+    // Material water = {
+    //     Color(255, 255, 255),
+    //     IMG_Load("path_to_your_texture_image.png"), // Load the texture here
+    //     0.0f,
+    //     10.0f,
+    //     1425.0f,
+    //     0.1f,
+    //     1.0f,
+    //     1.0f
+    // };
 
     // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
     // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 0.4f, ivory));
 
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, rubber));
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 0.4f, ivory));
+    objects.push_back(new Cube(glm::vec3(0.5f, 0.0f, 0.0f), 1.0f, rubber));
+    objects.push_back(new Cube(glm::vec3(-0.5f, 0.0f, 0.0f), 1.0f, ivory));
 }
 
 void render() {

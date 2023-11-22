@@ -1,9 +1,12 @@
 #pragma once
 
+#include <SDL.h>
+#include <SDL2/SDL_image.h>
+
 #include "color.h"
 
 struct Material {
-  Color diffuse;
+  SDL_Surface* texture; // Add this line
   float albedo;
   float specularAlbedo;
   float specularCoefficient;
