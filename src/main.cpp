@@ -25,8 +25,8 @@ const float BIAS = 0.0001f;
 
 SDL_Renderer* renderer;
 std::vector<Object*> objects;
-Light light(glm::vec3(-8, 0, 10), 1.5f, Color(255, 255, 255));
-Camera camera(glm::vec3(0.0, 0.0, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
+Light light(glm::vec3(0, 2, 10), 1.5f, Color(255, 255, 255));
+Camera camera(glm::vec3(0.0, 2.0, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
 
 
 void point(glm::vec2 position, Color color) {
@@ -135,61 +135,143 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
 } 
 
 void setUp() {
-    Material rubber = {
+    Material wood = {
         nullptr, // Load the texture here
-        0.9,
+        0.5,
+        0.04,
+        50.0f,
+        0.02f,
+        0.0f,
+        1.54
+    };
+
+    wood.texture = IMG_Load("assets/wood.png");
+    if (!wood.texture) {
+        print("Error loading texture");
+    }
+
+    Material stone = {
+        nullptr, // Load the texture here
+        0.6,
         0.1,
         10.0f,
+        0.05f,
         0.0f,
-        0.0f
+        1.54
     };
 
-    rubber.texture = IMG_Load("assets/madera.png");
-    if (!rubber.texture) {
+    stone.texture = IMG_Load("assets/stone.png");
+    if (!stone.texture) {
         print("Error loading texture");
     }
 
-    Material ivory = {
+    Material gold = {
+        nullptr, // Load the texture here
+        1.5f,
+        0.4f,
+        200.0f,
+        0.1f,
+        0.0f,
+        0.47f
+
+        // 0.5,
+        // 0.5,
+        // 50.0f,
+        // 0.4f,
+        // 0.0f
+    };
+
+    gold.texture = IMG_Load("assets/gold.png");
+    if (!gold.texture) {
+        print("Error loading texture");
+    }
+
+    Material water = {
+        nullptr, // Load the texture here
+        0.9,
+        0.95,
+        1000.0f,
+        0.1f,
+        0.5f,
+        1.0f
+    };
+
+    water.texture = IMG_Load("assets/water.png");
+    if (!water.texture) {
+        print("Error loading texture");
+    }
+
+    Material dirt = {
         nullptr, // Load the texture here
         0.5,
-        0.5,
-        50.0f,
-        0.4f,
-        0.0f
+        0.05,
+        10.0f,
+        0.05f,
+        0.0f,
+        1.54f
     };
 
-    ivory.texture = IMG_Load("assets/piedra.png");
-    if (!ivory.texture) {
+    dirt.texture = IMG_Load("assets/dirt.png");
+    if (!dirt.texture) {
         print("Error loading texture");
     }
-
-
-    // Material mirror = {
-    //     Color(255, 255, 255),
-    //     IMG_Load("path_to_your_texture_image.png"), // Load the texture here
-    //     0.0f,
-    //     10.0f,
-    //     1425.0f,
-    //     0.9f,
-    //     0.0f
-    // };
-
-    // Material water = {
-    //     Color(255, 255, 255),
-    //     IMG_Load("path_to_your_texture_image.png"), // Load the texture here
-    //     0.0f,
-    //     10.0f,
-    //     1425.0f,
-    //     0.1f,
-    //     1.0f,
-    //     1.0f
-    // };
 
     // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
     // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 0.4f, ivory));
 
-    // objects.push_back(new Cube(glm::vec3(0.5f, 0.0f, 0.0f), 1.0f, rubber));
-    objects.push_back(new Cube(glm::vec3(-0.5f, 0.0f, 0.0f), 1.0f, ivory));
+    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+
+    objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -1.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -2.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -3.0f), 1.0f, dirt));
+    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -4.0f), 1.0f, dirt));
+
+    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, 2.0f), 0.4f, wood));
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, gold));
 }
 
 void render() {
