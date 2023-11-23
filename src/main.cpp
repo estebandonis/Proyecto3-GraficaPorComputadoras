@@ -16,6 +16,7 @@
 #include "cube.h"
 #include "light.h"
 #include "camera.h"
+#include "skybox.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -23,10 +24,12 @@ const float ASPECT_RATIO = static_cast<float>(SCREEN_WIDTH) / static_cast<float>
 const int MAX_RECURSION = 4;
 const float BIAS = 0.0001f;
 
+Skybox skybox("assets/textures");
+
 SDL_Renderer* renderer;
 std::vector<Object*> objects;
-Light light(glm::vec3(0, 2, 10), 1.5f, Color(255, 255, 255));
-Camera camera(glm::vec3(0.0, 2.0, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
+Light light(glm::vec3(0, 3, 10), 1.5f, Color(255, 255, 255));
+Camera camera(glm::vec3(0.0, 0.0, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
 
 
 void point(glm::vec2 position, Color color) {
@@ -38,13 +41,26 @@ float castShadow(const glm::vec3& point, const glm::vec3& lightDir, const Object
   float tNearShadow = INFINITY;
   for (const auto& object : objects) {
     if (object != hitObject) {
-      float t = object->rayIntersect(point + lightDir * BIAS, lightDir).dist;
-      if (t < tNearShadow) {
-        tNearShadow = t;
-      }
+        float t = object->rayIntersect(point + lightDir * BIAS, lightDir).dist;
+        if (t < tNearShadow) {
+            tNearShadow = t;
+        }
     }
   }
   return tNearShadow < 1 ? 0.5f : 1.0f;
+}
+
+Color sampleSkybox(const glm::vec3& direction) {
+    // Convert direction vector to spherical coordinates
+    float theta = atan2(direction.z, direction.x);
+    float phi = acos(direction.y);
+    
+    // Convert spherical coordinates to texture coordinates
+    float u = theta / (2 * M_PI) + 0.5f;
+    float v = phi / M_PI;
+
+    // Sample the skybox texture at the calculated coordinates
+    return skybox.sample(u, v);
 }
 
 Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const short recursion = 0) {
@@ -62,7 +78,8 @@ Color castRay(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const s
     }
 
     if (!intersect.isIntersecting || recursion == MAX_RECURSION) {
-        return Color(173, 216, 230);
+        return sampleSkybox(rayDirection);
+
     }
 
     glm::vec3 lightDir = glm::normalize(light.position - intersect.point);
@@ -219,56 +236,56 @@ void setUp() {
     // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, mirror));
     // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 0.4f, ivory));
 
-    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-4.0f, 0.0f, -4.0f), 1.0f, dirt));
 
 
-    objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-3.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-2.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(4.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(3.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(2.0f, 0.0f, -4.0f), 1.0f, dirt));
 
-    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -1.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -2.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -3.0f), 1.0f, dirt));
-    objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -4.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -1.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -2.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -3.0f), 1.0f, dirt));
+    // objects.push_back(new Cube(glm::vec3(1.0f, 0.0f, -4.0f), 1.0f, dirt));
 
     // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, 2.0f), 0.4f, wood));
     // objects.push_back(new Cube(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, gold));
@@ -276,7 +293,6 @@ void setUp() {
 
 void render() {
     float fov = 3.1415/3;
-
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
             /*
