@@ -30,7 +30,7 @@ std::mutex pointMutex;
 SDL_Renderer* renderer;
 std::vector<Object*> objects;
 Light light(glm::vec3(0, 5, 6), 6.0f, Color(255, 255, 255));
-Camera camera(glm::vec3(0.0, 7.0, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f);
+Camera camera(glm::vec3(0.0, 5.0, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 4.0f, 0.0f), 10.0f);
 
 
 void point(glm::vec2 position, Color color) {
@@ -191,12 +191,6 @@ void setUp() {
         0.4f,
         0.0f,
         0.47f
-
-        // 0.5,
-        // 0.5,
-        // 50.0f,
-        // 0.4f,
-        // 0.0f
     };
 
     gold.texture = IMG_Load("assets/gold.png");
@@ -210,7 +204,7 @@ void setUp() {
         0.95,
         1000.0f,
         0.1f,
-        0.5f,
+        0.55f,
         1.0f
     };
 
@@ -292,9 +286,29 @@ void setUp() {
     objects.push_back(new Cube(glm::vec3(-1.0f, -1.0f, -1.0f), 1.0f, gold));
     objects.push_back(new Cube(glm::vec3(-1.0f, -1.0f, -2.0f), 1.0f, gold));
 
-    objects.push_back(new Cube(glm::vec3(1.0f, 1.0f, -2.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(1.0f, 1.0f, -1.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(1.0f, 2.0f, -1.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(1.0f, 3.0f, -1.0f), 1.0f, wood));
 
-    // objects.push_back(new Cube(glm::vec3(-1.0f, 0.0f, 2.0f), 0.4f, wood));
+    objects.push_back(new Cube(glm::vec3(1.0f, 3.0f, -2.0f), 1.0f, wood));
+
+    objects.push_back(new Cube(glm::vec3(1.0f, 1.0f, -3.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(1.0f, 2.0f, -3.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(1.0f, 3.0f, -3.0f), 1.0f, wood));
+
+    objects.push_back(new Cube(glm::vec3(2.0f, 3.0f, -1.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(2.0f, 3.0f, -2.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(2.0f, 3.0f, -3.0f), 1.0f, wood));
+
+    objects.push_back(new Cube(glm::vec3(3.0f, 1.0f, -1.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(3.0f, 2.0f, -1.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(3.0f, 3.0f, -1.0f), 1.0f, wood));
+
+    objects.push_back(new Cube(glm::vec3(3.0f, 3.0f, -2.0f), 1.0f, wood));
+
+    objects.push_back(new Cube(glm::vec3(3.0f, 1.0f, -3.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(3.0f, 2.0f, -3.0f), 1.0f, wood));
+    objects.push_back(new Cube(glm::vec3(3.0f, 3.0f, -3.0f), 1.0f, wood));
 }
 
 void render() {
@@ -302,12 +316,6 @@ void render() {
     #pragma omp parallel for
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         for (int x = 0; x < SCREEN_WIDTH; x++) {
-            /*
-            float random_value = static_cast<float>(std::rand())/static_cast<float>(RAND_MAX);
-            if (random_value < 0.0) {
-                continue;
-            }
-            */
 
             float screenX = (2.0f * (x + 0.5f)) / SCREEN_WIDTH - 1.0f;
             float screenY = -(2.0f * (y + 0.5f)) / SCREEN_HEIGHT + 1.0f;
@@ -325,7 +333,6 @@ void render() {
             );
            
             Color pixelColor = castRay(camera.position, rayDirection);
-            /* Color pixelColor = castRay(glm::vec3(0,0,20), glm::normalize(glm::vec3(screenX, screenY, -1.0f))); */
 
             point(glm::vec2(x, y), pixelColor);
         }
